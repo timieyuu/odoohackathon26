@@ -792,3 +792,28 @@ function Attendance({ user, db, updateDb, notify }) {
                     </tr>
                   );
                 })}
+              {db.attendance.filter(a => isAdmin ? a.date === dateFilter : a.userId === user.id).length === 0 && (
+                <tr><td colSpan={isAdmin ? 5 : 4} className="px-6 py-10 text-center text-[var(--ink-soft)]">No records for this date.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Leaves({ user, db, updateDb, notify }) {
+  const isAdmin = user.role === 'HR';
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ type: 'Paid', startDate: '', endDate: '', remarks: '' });
+  const [adminComments, setAdminComments] = useState({});
+
+  const handleApply = (e) => {
+    e.preventDefault();
+    const newLeave = { id: Date.now(), userId: user.id, ...form, status: 'Pending', adminComment: '' };
+    updateDb('leaves', [newLeave, ...db.leaves]);
+    setShowForm(false);
+    setForm({ type: 'Paid', startDate: '', endDate: '', remarks: '' });
+    notify('Leave request submitted successfully.');
+  };
