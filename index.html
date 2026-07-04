@@ -205,3 +205,80 @@ function Toast({ toast, onDone }) {
 
 // ---------------------------------------------------------
 // NEW AVATAR COMPONENT (Removes default PFP requirements)
+// ---------------------------------------------------------
+const Avatar = ({ user, size = 'md', className = '' }) => {
+    const sizeClasses = {
+        sm: 'w-8 h-8 text-xs',
+        md: 'w-10 h-10 text-sm',
+        lg: 'w-24 h-24 text-2xl',
+        xl: 'w-32 h-32 text-4xl'
+    };
+    const dimensions = sizeClasses[size] || sizeClasses.md;
+
+    const getInitials = (name) => {
+        if (!name) return '?';
+        const parts = name.trim().split(' ');
+        return parts.length > 1 
+            ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() 
+            : parts[0][0].toUpperCase();
+    };
+
+    if (user?.avatar) {
+        return (
+            <img 
+                src={user.avatar} 
+                alt={`${user?.name}'s profile`} 
+                className={`${dimensions} rounded-full object-cover shadow-sm ${className}`} 
+            />
+        );
+    }
+
+    // Modern Initials Avatar Layout
+    return (
+        <div className={`${dimensions} rounded-full flex items-center justify-center bg-[var(--ink)] text-[var(--cream)] font-bold tracking-wider shadow-inner ${className}`}>
+            {getInitials(user?.name)}
+        </div>
+    );
+};
+
+// Reusable avatar-with-upload control updated to use the new Avatar
+function AvatarUpload({ user, editable, onChange }) {
+  const inputRef = useRef(null);
+  const handleFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange(reader.result);
+    reader.readAsDataURL(file);
+  };
+  return (
+    <div className="relative inline-block">
+      <Avatar user={user} size="lg" className="avatar-ring" />
+      {editable && (
+        <button
+          type="button"
+          onClick={() => inputRef.current && inputRef.current.click()}
+          className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[var(--orange)] text-white flex items-center justify-center shadow-md hover:bg-[var(--orange-deep)] transition-transform hover:scale-105"
+          title="Change photo"
+        >
+          <Icon name="camera" className="w-4 h-4" />
+        </button>
+      )}
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
+
+function StatBlock({ eyebrow, value, caption, className = "" }) {
+  return (
+    <div className={`bg-[var(--orange)] text-white rounded-[1.25rem] p-6 flex flex-col justify-between shadow-lg ${className}`}
+         style={{ backgroundImage: 'linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%)' }}>
+      <p className="label-eyebrow text-white/80">{eyebrow}</p>
+      <p className="font-display text-4xl font-semibold mt-3">{value}</p>
+      {caption && <p className="text-sm text-white/85 mt-2">{caption}</p>}
+    </div>
+  );
+}
+
+// ==========================================
+// 2. AUTHENTICATION
