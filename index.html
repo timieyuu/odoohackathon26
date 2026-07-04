@@ -50,6 +50,8 @@ body{ background:var(--cream); color:var(--ink); -webkit-font-smoothing: antiali
 .btn-primary:active{ 
   transform: translateY(1px) scale(0.98); 
   box-shadow: 0 2px 8px rgba(194, 65, 12, 0.2); 
+}
+
 .btn-secondary{ background:var(--paper); color:var(--ink); border:1px solid var(--line); transition:all .2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
 .btn-secondary:hover{ background:#F6F0E5; border-color:#D9CDB6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
@@ -72,28 +74,6 @@ body{ background:var(--cream); color:var(--ink); -webkit-font-smoothing: antiali
 
 .label-eyebrow{ font-family:'IBM Plex Mono', monospace; letter-spacing:.12em; text-transform:uppercase; font-size:.68rem; color:var(--ink-soft); }
 .nav-pill{ transition:all .2s ease; }
-.nav-pill.active{ background:var(--orange); color:#fff; box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2); }
-.nav-pill:not(.active):hover{ background:#2A241C; color:#fff; transform: translateX(4px); }
-
-.fade-in{ animation:fadeIn .3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-@keyframes fadeIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
-
-.avatar-ring{ box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--line); }
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
-
-// ==========================================
-// 0. ICONS
-// ==========================================
-const ICON_PATHS = {
-  dashboard: <React.Fragment><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></React.Fragment>,
-  user: <React.Fragment><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20.5c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></React.Fragment>,
-  clock: <React.Fragment><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></React.Fragment>,
-  palm: <React.Fragment><path d="M12 21V10"/><path d="M12 10c0-3-2.2-5-5.5-5.2C6.8 8.6 8.8 10.8 12 10Z"/><path d="M12 10c0-4 2.6-6.3 6.5-6.6C18.4 8 15.8 10.6 12 10Z"/></React.Fragment>,
 .nav-pill.active{ background:var(--orange); color:#fff; box-shadow: 0 4px 12px rgba(255, 90, 31, 0.2); }
 .nav-pill:not(.active):hover{ background:#2A241C; color:#fff; transform: translateX(4px); }
 
@@ -630,7 +610,7 @@ function Profile({ user, db, updateDb, initialSelectedId, notify }) {
             {db.users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.id})</option>)}
           </select>
         )}
-</div>
+      </div>
       
       <div className="card p-8 md:p-10">
         <div className="flex items-center gap-8 mb-10 pb-8 border-b border-[var(--line)] flex-wrap">
@@ -700,6 +680,7 @@ function Field({ label, icon, editable, value, onChange }) {
     </div>
   );
 }
+
 function Attendance({ user, db, updateDb, notify }) {
   const isAdmin = user.role === 'HR';
   const myAttendance = db.attendance.find(a => a.userId === user.id && a.date === todayStr);
@@ -818,7 +799,7 @@ function Leaves({ user, db, updateDb, notify }) {
     notify('Leave request submitted successfully.');
   };
 
-    const handleAction = (leaveId, newStatus) => {
+  const handleAction = (leaveId, newStatus) => {
     const comment = adminComments[leaveId] || '';
     const updatedLeaves = db.leaves.map(l => l.id === leaveId ? { ...l, status: newStatus, adminComment: comment } : l);
     updateDb('leaves', updatedLeaves);
@@ -982,7 +963,8 @@ function Payroll({ user, db, updateDb, notify }) {
           </div>
         )}
       </div>
-<div className="card p-8">
+      
+      <div className="card p-8">
         <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[var(--line)] flex-wrap">
           <Avatar user={targetUser} size="lg" className="avatar-ring shadow-md" />
           <div>
@@ -1046,7 +1028,7 @@ function Payroll({ user, db, updateDb, notify }) {
 function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('dashboard');
-const [selectedProfileId, setSelectedProfileId] = useState(null);
+  const [selectedProfileId, setSelectedProfileId] = useState(null);
   
   const [db, updateDb] = useDatabase();
   const [toast, fireToast, setToast] = useToast();
@@ -1121,3 +1103,4 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
