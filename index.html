@@ -551,3 +551,82 @@ function AdminDashboard({ db, setView, onSelectEmployee }) {
         </div>
         <div className="card p-6 cursor-pointer flex flex-col justify-center" onClick={() => setView('attendance')}>
           <p className="label-eyebrow mb-3">Attendance log</p>
+          <p className="font-display text-xl font-semibold text-[var(--orange-deep)] flex items-center gap-2 group">
+            View full log <Icon name="chevron" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </p>
+        </div>
+      </div>
+      <div className="card overflow-hidden">
+        <div className="px-6 py-5 border-b border-[var(--line)] flex justify-between items-center bg-white/50">
+          <h3 className="font-display text-xl font-semibold">Employee directory</h3>
+          <p className="text-xs text-[var(--ink-soft)] font-mono">Click row to manage</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full whitespace-nowrap text-[15px]">
+            <thead className="bg-[#FBF6EE] text-left text-[11px] font-mono uppercase tracking-widest text-[var(--ink-soft)]">
+              <tr>
+                <th className="px-6 py-4">Employee</th>
+                <th className="px-6 py-4">Role</th>
+                <th className="px-6 py-4">Department</th>
+                <th className="px-6 py-4">Contact</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--line)]">
+              {db.users.map(u => (
+                <tr key={u.id} className="hover:bg-[#FBF6EE] cursor-pointer transition-colors" onClick={() => onSelectEmployee(u.id)}>
+                  <td className="px-6 py-4 flex items-center gap-4">
+                    <Avatar user={u} size="sm" className="w-9 h-9" />
+                    <div>
+                      <p className="font-semibold text-[var(--ink)]">{u.name}</p>
+                      <p className="text-xs text-[var(--ink-soft)] font-mono mt-0.5">{u.id}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-[var(--ink-soft)]">{u.jobTitle}</td>
+                  <td className="px-6 py-4 text-[var(--ink-soft)]">{u.department}</td>
+                  <td className="px-6 py-4 text-[var(--ink-soft)]">{u.email}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 5. FEATURE MODULES
+// ==========================================
+function Profile({ user, db, updateDb, initialSelectedId, notify }) {
+  const [selectedUserId, setSelectedUserId] = useState(initialSelectedId || user.id);
+  const [editMode, setEditMode] = useState(false);
+  const targetUser = db.users.find(u => u.id === selectedUserId) || user;
+  const [formData, setFormData] = useState({ ...targetUser });
+
+  useEffect(() => { setFormData({ ...targetUser }); }, [selectedUserId, targetUser.id, targetUser.avatar, targetUser.name]);
+
+  const isAdmin = user.role === 'HR';
+  const isSelf = targetUser.id === user.id;
+  const canEditBasics = isAdmin || isSelf;
+  const canEditAdminFields = isAdmin; 
+
+  const handleSave = () => {
+    const updatedUsers = db.users.map(u => u.id === formData.id ? formData : u);
+    updateDb('users', updatedUsers);
+    setEditMode(false);
+    notify(`Saved changes for ${formData.name}.`);
+  };
+
+  return (
+    <div className="space-y-8 max-w-4xl">
+      <div className="flex justify-between items-end flex-wrap gap-4">
+        <div>
+          <p className="label-eyebrow">Employee record</p>
+          <h2 className="font-display text-4xl font-semibold text-[var(--ink)] mt-2 tracking-tight">Profile</h2>
+        </div>
+        {isAdmin && (
+          <select className="input-field w-auto shadow-sm" value={selectedUserId}
+            onChange={e => { setSelectedUserId(e.target.value); setEditMode(false); }}>
+            {db.users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.id})</option>)}
+          </select>
+        )}
