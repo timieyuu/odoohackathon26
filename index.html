@@ -136,3 +136,72 @@ function Icon({ name, className = "w-5 h-5", strokeWidth = 1.8 }) {
       strokeLinecap="round" strokeLinejoin="round" className={className}>
       {ICON_PATHS[name] || null}
     </svg>
+  );
+}
+
+// ==========================================
+// 1. SEED DATA 
+// ==========================================
+const SEED_USERS = [
+  { id: 'HR001', name: 'Alice Admin', email: 'admin@hrms.com', password: 'password', role: 'HR', jobTitle: 'HR Director', department: 'Human Resources', avatar: 'https://i.pravatar.cc/150?u=HR001', phone: '555-0101', address: '123 Corporate Blvd', joinDate: '2020-01-15', salary: { basic: 8000, allowances: 1000, deductions: 500, net: 8500 } },
+  { id: 'EMP001', name: 'Bob Builder', email: 'bob@hrms.com', password: 'password', role: 'Employee', jobTitle: 'Frontend Engineer', department: 'Engineering', avatar: 'https://i.pravatar.cc/150?u=EMP001', phone: '555-0202', address: '456 Dev Lane', joinDate: '2023-03-10', salary: { basic: 6000, allowances: 500, deductions: 300, net: 6200 } },
+  { id: 'EMP002', name: 'Charlie Clark', email: 'charlie@hrms.com', password: 'password', role: 'Employee', jobTitle: 'Product Manager', department: 'Product', avatar: 'https://i.pravatar.cc/150?u=EMP002', phone: '555-0303', address: '789 Vision Way', joinDate: '2022-08-01', salary: { basic: 7500, allowances: 600, deductions: 400, net: 7700 } },
+  { id: 'EMP003', name: 'Diana Prince', email: 'diana@hrms.com', password: 'password', role: 'Employee', jobTitle: 'UX Designer', department: 'Design', avatar: 'https://i.pravatar.cc/150?u=EMP003', phone: '555-0404', address: '321 Creative Cir', joinDate: '2024-01-20', salary: { basic: 5500, allowances: 400, deductions: 250, net: 5650 } }
+];
+
+const SEED_LEAVES = [
+  { id: 1, userId: 'EMP001', type: 'Paid', startDate: '2026-07-10', endDate: '2026-07-12', remarks: 'Vacation', status: 'Pending', adminComment: '' },
+  { id: 2, userId: 'EMP002', type: 'Sick', startDate: '2026-06-25', endDate: '2026-06-26', remarks: 'Flu', status: 'Approved', adminComment: 'Rest well.' },
+  { id: 3, userId: 'EMP003', type: 'Unpaid', startDate: '2026-07-01', endDate: '2026-07-01', remarks: 'Personal errands', status: 'Rejected', adminComment: 'Need hands on deck for launch.' }
+];
+
+const todayStr = new Date().toISOString().split('T')[0];
+const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+const SEED_ATTENDANCE = [
+  { userId: 'EMP001', date: todayStr, status: 'Present', checkIn: '09:02 AM', checkOut: '' },
+  { userId: 'EMP002', date: yesterdayStr, status: 'Present', checkIn: '08:55 AM', checkOut: '05:10 PM' },
+  { userId: 'EMP003', date: todayStr, status: 'Leave', checkIn: '', checkOut: '' }
+];
+
+function useDatabase() {
+  const [data, setData] = useState({
+    users: SEED_USERS,
+    leaves: SEED_LEAVES,
+    attendance: SEED_ATTENDANCE,
+  });
+  const updateDb = (key, newData) => setData(prev => ({ ...prev, [key]: newData }));
+  return [data, updateDb];
+}
+
+function useToast() {
+  const [toast, setToast] = useState(null);
+  const fire = (message, tone = 'ok') => {
+    setToast({ message, tone, key: Date.now() });
+    setTimeout(() => setToast(t => (t && t.key === undefined ? null : t)), 0);
+  };
+  return [toast, fire, setToast];
+}
+
+function Toast({ toast, onDone }) {
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+  if (!toast) return null;
+  const tones = {
+    ok: 'bg-[var(--ink)] text-white',
+    warn: 'bg-[var(--red)] text-white',
+  };
+  return (
+    <div className="fixed bottom-6 right-6 z-50 fade-in">
+      <div className={`px-5 py-3 rounded-xl shadow-2xl text-sm font-medium ${tones[toast.tone] || tones.ok}`}>
+        {toast.message}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// NEW AVATAR COMPONENT (Removes default PFP requirements)
