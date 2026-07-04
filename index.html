@@ -700,3 +700,95 @@ function Field({ label, icon, editable, value, onChange }) {
     </div>
   );
 }
+function Attendance({ user, db, updateDb, notify }) {
+  const isAdmin = user.role === 'HR';
+  const myAttendance = db.attendance.find(a => a.userId === user.id && a.date === todayStr);
+  const [dateFilter, setDateFilter] = useState(todayStr);
+
+  const handleCheckIn = () => {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newRecord = { userId: user.id, date: todayStr, status: 'Present', checkIn: time, checkOut: '' };
+    updateDb('attendance', [...db.attendance.filter(a => !(a.userId === user.id && a.date === todayStr)), newRecord]);
+    notify(`Checked in at ${time}.`);
+  };
+
+  const handleCheckOut = () => {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const updated = db.attendance.map(a => (a.userId === user.id && a.date === todayStr) ? { ...a, checkOut: time } : a);
+    updateDb('attendance', updated);
+    notify(`Checked out at ${time}.`);
+  };
+
+  const getStatusColor = (status) => ({
+    'Present': 'bg-[var(--green-soft)] text-[var(--green)] border border-[var(--green)]/20',
+    'Absent': 'bg-[var(--red-soft)] text-[var(--red)] border border-[var(--red)]/20',
+    'Leave': 'bg-[var(--amber-soft)] text-[var(--orange-deep)] border border-[var(--orange)]/20',
+    'Half-day': 'bg-[var(--yellow-soft)] text-[var(--yellow)] border border-[var(--yellow)]/20',
+  }[status] || 'bg-gray-100 text-gray-700');
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="label-eyebrow">{isAdmin ? 'Company-wide' : 'Your record'}</p>
+        <h2 className="font-display text-4xl font-semibold text-[var(--ink)] mt-2 tracking-tight">Attendance</h2>
+      </div>
+      
+      {!isAdmin && (
+        <div className="card p-8 flex flex-wrap justify-between items-center gap-6">
+          <div>
+            <h3 className="font-display text-2xl font-semibold">Today &nbsp;·&nbsp; {todayStr}</h3>
+            <p className="text-[var(--ink-soft)] mt-3 text-md">
+              Status: <span className={`inline-block ml-2 px-3 py-1 rounded-md text-sm font-semibold ${myAttendance?.status ? getStatusColor(myAttendance.status) : 'bg-gray-100 text-gray-600'}`}>{myAttendance?.status || 'Not checked in'}</span>
+            </p>
+            {myAttendance?.checkIn && (
+              <p className="text-sm text-[var(--ink-soft)] mt-3 font-mono bg-[#FBF6EE] inline-block px-3 py-1.5 rounded-md">
+                IN: {myAttendance.checkIn} &nbsp;{myAttendance.checkOut && `| OUT: ${myAttendance.checkOut}`}
+              </p>
+            )}
+          </div>
+          <div className="space-x-3">
+            {!myAttendance?.checkIn && (
+              <button onClick={handleCheckIn} className="btn-primary px-8 py-3 rounded-xl font-semibold text-md shadow-lg shadow-orange-500/30">Check in now</button>
+            )}
+            {myAttendance?.checkIn && !myAttendance?.checkOut && (
+              <button onClick={handleCheckOut} className="px-8 py-3 rounded-xl font-semibold text-md text-white bg-[var(--red)] hover:bg-[#A32A1F] transition-colors shadow-lg shadow-red-500/20">Check out</button>
+            )}
+            {myAttendance?.checkIn && myAttendance?.checkOut && (
+              <span className="text-sm text-[var(--ink-soft)] font-semibold bg-[var(--green-soft)] text-[var(--green)] px-4 py-2 rounded-lg">Day complete ✓</span>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <div className="card overflow-hidden">
+        <div className="p-5 border-b border-[var(--line)] flex justify-between items-center bg-[#FBF6EE]">
+          <h3 className="font-semibold text-[15px]">{isAdmin ? 'Company attendance log' : 'My recent attendance'}</h3>
+          {isAdmin && <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="input-field w-auto text-sm py-2 bg-white" />}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[15px] text-left">
+            <thead className="bg-[#FBF6EE] border-b border-[var(--line)]">
+              <tr>
+                {isAdmin && <th className="px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Employee</th>}
+                <th className="px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Date</th>
+                <th className="px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Status</th>
+                <th className="px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Check in</th>
+                <th className="px-6 py-4 font-mono text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Check out</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--line)]">
+              {db.attendance
+                .filter(a => isAdmin ? a.date === dateFilter : a.userId === user.id)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map((record, i) => {
+                  const emp = db.users.find(u => u.id === record.userId);
+                  return (
+                    <tr key={i} className="hover:bg-[#FBF6EE] transition-colors">
+                      {isAdmin && <td className="px-6 py-4 font-medium">{emp ? emp.name : record.userId}</td>}
+                      <td className="px-6 py-4">{record.date}</td>
+                      <td className="px-6 py-4"><span className={`px-3 py-1 rounded-md text-xs font-semibold ${getStatusColor(record.status)}`}>{record.status}</span></td>
+                      <td className="px-6 py-4 font-mono text-sm">{record.checkIn || '—'}</td>
+                      <td className="px-6 py-4 font-mono text-sm">{record.checkOut || '—'}</td>
+                    </tr>
+                  );
+                })}
