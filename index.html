@@ -1046,3 +1046,78 @@ function Payroll({ user, db, updateDb, notify }) {
 function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('dashboard');
+const [selectedProfileId, setSelectedProfileId] = useState(null);
+  
+  const [db, updateDb] = useDatabase();
+  const [toast, fireToast, setToast] = useToast();
+  
+  const notify = (message, tone = 'ok') => setToast({ message, tone, key: Date.now() });
+
+  if (!user) {
+    return <Auth onLogin={(u) => { setUser(u); notify(`Signed in as ${u.name}.`); }} db={db} updateDb={updateDb} />;
+  }
+
+  const goToEmployeeProfile = (id) => { setSelectedProfileId(id); setView('profile'); };
+
+  const renderView = () => {
+    // -----------------------------------------------------------------
+    // NEW ONBOARDING WORKFLOW INTERCEPTOR
+    // -----------------------------------------------------------------
+    const currentUser = db.users.find(u => u.id === user.id) || user;
+    const isProfileIncomplete = currentUser && !currentUser.avatar && (!currentUser.phone || currentUser.phone === '-'); 
+
+    if (isProfileIncomplete && view !== 'profile') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full fade-in w-full pb-20">
+                <div className="card p-10 max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--orange)] to-[var(--orange-deep)]"></div>
+                    <div className="w-20 h-20 bg-[var(--amber-soft)] text-[var(--orange-deep)] rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <Icon name="user" className="w-10 h-10" strokeWidth={2} />
+                    </div>
+                    <h2 className="text-4xl font-bold font-display text-[var(--ink)] mb-4 tracking-tight">Welcome aboard!</h2>
+                    <p className="text-[var(--ink-soft)] mb-10 text-[16px] leading-relaxed">Let's get your profile set up before you dive into the dashboard. Adding your photo and contact info helps the team connect.</p>
+                    <button 
+                        onClick={() => setView('profile')}
+                        className="w-full btn-primary px-6 py-3.5 rounded-xl font-bold text-[16px] flex items-center justify-center gap-2"
+                    >
+                        Complete Profile Setup <Icon name="chevron" className="w-5 h-5 rotate-[-90deg]" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    switch (view) {
+      case 'dashboard':
+        return user.role === 'HR' 
+          ? <AdminDashboard db={db} setView={setView} onSelectEmployee={goToEmployeeProfile} />
+          : <EmployeeDashboard user={user} db={db} setView={setView} />;
+      case 'profile':
+        return <Profile key={selectedProfileId || user.id} user={user} db={db} updateDb={updateDb} initialSelectedId={selectedProfileId} notify={notify} />;
+      case 'attendance':
+        return <Attendance user={user} db={db} updateDb={updateDb} notify={notify} />;
+      case 'leaves':
+        return <Leaves user={user} db={db} updateDb={updateDb} notify={notify} />;
+      case 'payroll':
+        return <Payroll user={user} db={db} updateDb={updateDb} notify={notify} />;
+      default:
+        return <div className="p-10 text-center font-display text-2xl text-[var(--ink-soft)]">View not found</div>;
+    }
+  };
+
+  return (
+    <>
+      <Layout user={db.users.find(u => u.id === user.id) || user} onLogout={() => { setUser(null); setView('dashboard'); setSelectedProfileId(null); }} currentView={view} setView={(v) => { setView(v); 
+        if (v !== 'profile') setSelectedProfileId(null); }}>
+        {renderView()}
+      </Layout>
+      <Toast toast={toast} onDone={() => setToast(null)} />
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
