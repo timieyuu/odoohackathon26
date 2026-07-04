@@ -982,3 +982,67 @@ function Payroll({ user, db, updateDb, notify }) {
           </div>
         )}
       </div>
+<div className="card p-8">
+        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[var(--line)] flex-wrap">
+          <Avatar user={targetUser} size="lg" className="avatar-ring shadow-md" />
+          <div>
+            <h3 className="font-display text-2xl font-semibold tracking-tight">{targetUser.name}</h3>
+            <p className="text-[var(--ink-soft)] text-md mt-1">{targetUser.jobTitle}</p>
+          </div>
+          {isAdmin && !editMode && (
+            <button onClick={() => setEditMode(true)} className="ml-auto btn-ghost-orange px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-sm">
+              <Icon name="edit" className="w-4 h-4" /> Edit structure
+            </button>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="space-y-6">
+            <div className="bg-[#FBF6EE] p-5 rounded-xl border border-[var(--line)]">
+              <label className="label-eyebrow flex items-center gap-2">Basic pay</label>
+              {editMode ? 
+                <input type="number" className="input-field mt-3 font-mono text-lg" value={salaryState.basic} onChange={e => setSalaryState({ ...salaryState, basic: e.target.value })} />
+                : <p className="text-2xl font-mono font-medium mt-2 text-[var(--ink)]">{formatMoney(salaryState.basic)}</p>}
+            </div>
+            <div className="bg-[var(--green-soft)]/40 p-5 rounded-xl border border-[var(--green)]/20">
+              <label className="label-eyebrow flex items-center gap-2 text-[var(--green)]">Allowances</label>
+              {editMode ? 
+                <input type="number" className="input-field mt-3 font-mono text-lg border-[var(--green)]/30 focus:border-[var(--green)]" value={salaryState.allowances} onChange={e => setSalaryState({ ...salaryState, allowances: e.target.value })} />
+                : <p className="text-2xl font-mono font-medium mt-2 text-[var(--green)]">+{formatMoney(salaryState.allowances)}</p>}
+            </div>
+            <div className="bg-[var(--red-soft)]/40 p-5 rounded-xl border border-[var(--red)]/20">
+              <label className="label-eyebrow flex items-center gap-2 text-[var(--red)]">Deductions (tax, benefits)</label>
+              {editMode ? 
+                <input type="number" className="input-field mt-3 font-mono text-lg border-[var(--red)]/30 focus:border-[var(--red)]" value={salaryState.deductions} onChange={e => setSalaryState({ ...salaryState, deductions: e.target.value })} />
+                : <p className="text-2xl font-mono font-medium mt-2 text-[var(--red)]">-{formatMoney(salaryState.deductions)}</p>}
+            </div>
+          </div>
+          
+          <div className="rounded-[1.5rem] p-8 flex flex-col justify-center items-center text-white shadow-xl relative overflow-hidden"
+               style={{ backgroundImage: 'linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%)' }}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+            
+            <p className="label-eyebrow text-white/80 tracking-widest relative z-10">Net monthly pay</p>
+            <div className="font-display text-5xl font-bold mt-4 tracking-tight relative z-10">
+              {formatMoney(editMode ? livePreviewNet : salaryState.net)}
+            </div>
+            
+            {editMode && (
+              <div className="flex gap-3 mt-10 w-full relative z-10">
+                <button onClick={() => { setEditMode(false); setSalaryState({ ...targetUser.salary }); }} className="flex-1 bg-white/15 hover:bg-white/25 text-white py-3 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
+                <button onClick={handleSave} className="flex-1 bg-white text-[var(--orange-deep)] py-3 rounded-xl font-bold text-sm hover:bg-white/90 shadow-lg transition-colors">Save payroll</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 6. MAIN APP
+// ==========================================
+function App() {
+  const [user, setUser] = useState(null);
+  const [view, setView] = useState('dashboard');
