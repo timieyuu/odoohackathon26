@@ -355,3 +355,104 @@ function Auth({ onLogin, db, updateDb }) {
             <p className="text-[var(--ink-soft)] mt-2 text-md">
               {isLogin ? 'Sign in to Fieldhouse HR.' : 'Set up access for a new team member.'}
             </p>
+          </div>
+          
+          {message && (
+            <div className={`p-4 mb-6 rounded-xl text-sm font-medium fade-in ${isSuccess ? 'bg-[var(--green-soft)] text-[var(--green)] border border-[var(--green)]/20' : 'bg-[var(--red-soft)] text-[var(--red)] border border-[var(--red)]/20'}`}>
+              {message}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-5 fade-in">
+            {!isLogin && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="label-eyebrow block mb-1.5">Employee ID</label>
+                    <input type="text" required className="input-field" placeholder="EMP004"
+                           value={form.id} onChange={e => setForm({ ...form, id: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label-eyebrow block mb-1.5">Role</label>
+                    <select className="input-field" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+                      <option value="Employee">Employee</option>
+                      <option value="HR">HR / Admin</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="label-eyebrow block mb-1.5">Full name</label>
+                  <input type="text" required className="input-field" placeholder="Jordan Lee"
+                         value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                </div>
+              </>
+            )}
+            <div>
+              <label className="label-eyebrow block mb-1.5">Email address</label>
+              <input type="email" required className="input-field" placeholder="you@company.com"
+                     value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <label className="label-eyebrow block mb-1.5">Password</label>
+              <input type="password" required className="input-field" placeholder="••••••••"
+                     value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <button type="submit" className="btn-primary w-full py-3 rounded-xl font-semibold text-md mt-2">
+              {isLogin ? 'Sign in' : 'Create account'}
+            </button>
+          </form>
+          
+          <div className="mt-8 text-center fade-in">
+            <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-[var(--orange-deep)] hover:underline text-sm font-medium">
+              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </button>
+          </div>
+          
+          <div className="mt-10 border-t border-[var(--line)] pt-5 text-xs text-[var(--ink-soft)] text-center font-mono fade-in">
+            Demo: admin@hrms.com / password &nbsp;·&nbsp; bob@hrms.com / password
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 3. LAYOUT & NAVIGATION
+// ==========================================
+function Layout({ user, onLogout, currentView, setView, children }) {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'attendance', label: 'Attendance', icon: 'clock' },
+    { id: 'leaves', label: 'Leaves', icon: 'palm' },
+    { id: 'payroll', label: 'Payroll', icon: 'bank' },
+  ];
+  return (
+    <div className="flex h-screen bg-[var(--cream)]">
+      <aside className="w-64 bg-[var(--ink)] flex flex-col shadow-2xl z-10">
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[var(--orange)] flex items-center justify-center shrink-0 shadow-sm">
+              <span className="text-white font-display font-bold text-md">F</span>
+            </div>
+            <h1 className="font-display text-2xl font-semibold text-white tracking-tight">Fieldhouse</h1>
+          </div>
+          <span className="inline-block px-2.5 py-1 mt-5 text-[11px] font-mono uppercase tracking-wide bg-white/10 rounded-md text-white/80">
+            {user.role} portal
+          </span>
+        </div>
+        <nav className="flex-1 p-4 space-y-1.5 mt-2">
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setView(item.id)}
+              className={`nav-pill w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium ${currentView === item.id ? 'active' : 'text-white/70'}`}>
+              <Icon name={item.icon} className="w-[18px] h-[18px]" />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="p-5 border-t border-white/10 bg-black/10">
+          <div className="flex items-center gap-3 mb-5 px-1">
+            <Avatar user={user} size="sm" className="w-10 h-10" />
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">{user.name}</p>
