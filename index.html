@@ -22,3 +22,31 @@
   --amber-soft:#FFE7D6;
   --line:#EAE1D2;
   --green:#2F7D5A;
+  --green-soft:#E3F1EA;
+  --red:#C13B2E;
+  --red-soft:#FBE6E3;
+  --yellow:#B8791A;
+  --yellow-soft:#FBEED9;
+}
+*{ font-family:'Inter', system-ui, sans-serif; }
+body{ background:var(--cream); color:var(--ink); -webkit-font-smoothing: antialiased; }
+.font-display{ font-family:'Fraunces', serif; }
+.font-mono{ font-family:'IBM Plex Mono', monospace; }
+.hide-scroll::-webkit-scrollbar{ display:none; }
+.hide-scroll{ -ms-overflow-style:none; scrollbar-width:none; }
+
+/* Enhanced "Cooler" UI Styling */
+.btn-primary{ 
+  background:var(--orange); 
+  color:#fff; 
+  transition:all .2s cubic-bezier(0.4, 0, 0.2, 1); 
+  box-shadow: 0 4px 12px rgba(255, 90, 31, 0.25); 
+}
+.btn-primary:hover{ 
+  background:var(--orange-deep); 
+  transform: translateY(-2px); 
+  box-shadow: 0 6px 16px rgba(194, 65, 12, 0.35); 
+}
+.btn-primary:active{ 
+  transform: translateY(1px) scale(0.98); 
+  box-shadow: 0 2px 8px rgba(194, 65, 12, 0.2); 
