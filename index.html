@@ -50,3 +50,25 @@ body{ background:var(--cream); color:var(--ink); -webkit-font-smoothing: antiali
 .btn-primary:active{ 
   transform: translateY(1px) scale(0.98); 
   box-shadow: 0 2px 8px rgba(194, 65, 12, 0.2); 
+.btn-secondary{ background:var(--paper); color:var(--ink); border:1px solid var(--line); transition:all .2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.btn-secondary:hover{ background:#F6F0E5; border-color:#D9CDB6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+.btn-ghost-orange{ background:var(--amber-soft); color:var(--orange-deep); transition:all .2s ease; }
+.btn-ghost-orange:hover{ background:#FFD9BB; transform: translateY(-1px); }
+
+.card{ 
+  background:var(--paper); 
+  border:1px solid var(--line); 
+  border-radius:1.25rem; 
+  box-shadow: 0 8px 30px rgba(0,0,0,0.03); 
+  transition: box-shadow 0.3s ease, transform 0.3s ease; 
+}
+.card:hover{ 
+  box-shadow: 0 12px 40px rgba(0,0,0,0.06); 
+}
+
+.input-field{ border:1px solid var(--line); border-radius:.6rem; padding:.65rem .75rem; background:#fff; transition:all .2s ease; width:100%; }
+.input-field:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 3px var(--amber-soft); }
+
+.label-eyebrow{ font-family:'IBM Plex Mono', monospace; letter-spacing:.12em; text-transform:uppercase; font-size:.68rem; color:var(--ink-soft); }
+.nav-pill{ transition:all .2s ease; }
