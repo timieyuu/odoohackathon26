@@ -630,3 +630,73 @@ function Profile({ user, db, updateDb, initialSelectedId, notify }) {
             {db.users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.id})</option>)}
           </select>
         )}
+</div>
+      
+      <div className="card p-8 md:p-10">
+        <div className="flex items-center gap-8 mb-10 pb-8 border-b border-[var(--line)] flex-wrap">
+          <AvatarUpload
+            user={formData}
+            editable={editMode && canEditBasics}
+            onChange={(dataUrl) => setFormData({ ...formData, avatar: dataUrl })}
+          />
+          <div className="flex-1 min-w-[200px]">
+            {editMode && canEditBasics ? (
+              <input className="input-field font-display text-2xl font-semibold mb-2" value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })} />
+            ) : (
+              <h3 className="font-display text-3xl font-semibold text-[var(--ink)] tracking-tight">{formData.name}</h3>
+            )}
+            <p className="text-[var(--ink-soft)] text-md mt-1">{formData.jobTitle} &nbsp;·&nbsp; {formData.department}</p>
+            
+            <button onClick={() => setEditMode(!editMode)}
+              className={`mt-5 text-sm font-semibold px-4 py-2 rounded-xl inline-flex items-center gap-2 ${editMode ? 'btn-secondary' : 'btn-ghost-orange'}`}>
+              <Icon name={editMode ? 'x' : 'edit'} className="w-4 h-4" />
+              {editMode ? 'Cancel edit' : 'Edit profile'}
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Field label="Email" icon="mail" editable={editMode && canEditAdminFields}
+            value={formData.email} onChange={v => setFormData({ ...formData, email: v })} />
+          <Field label="Phone" icon="phone" editable={editMode && canEditBasics}
+            value={formData.phone} onChange={v => setFormData({ ...formData, phone: v })} />
+          <Field label="Address" icon="pin" editable={editMode && canEditBasics}
+            value={formData.address} onChange={v => setFormData({ ...formData, address: v })} />
+          <Field label="Join date" icon="calendar" editable={false} value={formData.joinDate} />
+          {canEditAdminFields && (
+            <>
+              <Field label="Job title (admin)" editable={editMode}
+                value={formData.jobTitle} onChange={v => setFormData({ ...formData, jobTitle: v })} />
+              <Field label="Department (admin)" editable={editMode}
+                value={formData.department} onChange={v => setFormData({ ...formData, department: v })} />
+            </>
+          )}
+        </div>
+        
+        {editMode && (
+          <div className="mt-10 pt-6 border-t border-[var(--line)] flex justify-end gap-3 fade-in">
+            <button onClick={() => { setEditMode(false); setFormData({ ...targetUser }); }} className="btn-secondary px-6 py-2.5 rounded-xl font-medium text-sm">Cancel</button>
+            <button onClick={handleSave} className="btn-primary px-8 py-2.5 rounded-xl font-semibold text-sm">Save changes</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, icon, editable, value, onChange }) {
+  return (
+    <div>
+      <label className="label-eyebrow flex items-center gap-2 mb-2">
+        {icon && <Icon name={icon} className="w-4 h-4 text-[var(--ink-soft)]" strokeWidth={2.2} />}
+        {label}
+      </label>
+      {editable ? (
+        <input className="input-field" value={value} onChange={e => onChange(e.target.value)} />
+      ) : (
+        <p className="text-[var(--ink)] text-[16px] font-medium">{value || '—'}</p>
+      )}
+    </div>
+  );
+}
