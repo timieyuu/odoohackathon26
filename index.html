@@ -456,3 +456,98 @@ function Layout({ user, onLogout, currentView, setView, children }) {
             <Avatar user={user} size="sm" className="w-10 h-10" />
             <div className="overflow-hidden">
               <p className="text-sm font-medium text-white truncate">{user.name}</p>
+              <p className="text-xs text-white/50 truncate">{user.jobTitle}</p>
+            </div>
+          </div>
+          <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-white/80 border border-white/15 hover:bg-white/10 hover:text-white transition-all">
+            <Icon name="logout" className="w-4 h-4" />
+            Log out
+          </button>
+        </div>
+      </aside>
+      <main className="flex-1 overflow-y-auto p-8 lg:p-10 hide-scroll">
+        <div className="fade-in max-w-6xl mx-auto">{children}</div>
+      </main>
+    </div>
+  );
+}
+
+// ==========================================
+// 4. DASHBOARDS
+// ==========================================
+function EmployeeDashboard({ user, db, setView }) {
+  const myLeaves = db.leaves.filter(l => l.userId === user.id);
+  const myAttendance = db.attendance.find(a => a.userId === user.id && a.date === todayStr);
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="label-eyebrow">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+        <h2 className="font-display text-4xl font-semibold text-[var(--ink)] mt-2 tracking-tight">
+          Welcome back, {user.name.split(' ')[0]}
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatBlock
+          eyebrow="Today's status"
+          value={myAttendance?.checkIn ? 'Checked in' : 'Not checked in'}
+          caption={myAttendance?.checkIn ? `In at ${myAttendance.checkIn}` : 'Head to Attendance to clock in'}
+          className="cursor-pointer hover:brightness-105 transform hover:-translate-y-1 transition-transform"
+        />
+        <div className="card p-6 flex flex-col justify-between cursor-pointer" onClick={() => setView('leaves')}>
+          <p className="label-eyebrow">Pending leaves</p>
+          <p className="font-display text-4xl font-semibold mt-3">{myLeaves.filter(l => l.status === 'Pending').length}</p>
+          <p className="text-sm text-[var(--ink-soft)] mt-2">Awaiting HR approval</p>
+        </div>
+        <div className="card p-6 flex flex-col justify-between cursor-pointer" onClick={() => setView('profile')}>
+          <div className="flex items-center justify-between">
+            <p className="label-eyebrow">My profile</p>
+            <Avatar user={user} size="sm" className="w-9 h-9" />
+          </div>
+          <div>
+            <p className="font-display text-2xl font-semibold mt-4">{user.department}</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-1">{user.jobTitle}</p>
+          </div>
+        </div>
+      </div>
+      <div className="card p-8">
+        <h3 className="font-display text-xl font-semibold mb-5">Recent activity</h3>
+        <div className="space-y-4">
+          {myLeaves.slice(0, 3).map((leave, i) => (
+            <div key={i} className="flex items-center gap-4 text-[15px]">
+              <span className={`w-2.5 h-2.5 rounded-full ${leave.status === 'Approved' ? 'bg-[var(--green)]' : leave.status === 'Rejected' ? 'bg-[var(--red)]' : 'bg-[var(--yellow)]'}`}></span>
+              <p>Your {leave.type} leave request ({leave.startDate}) is <strong className="font-semibold">{leave.status}</strong>.</p>
+            </div>
+          ))}
+          <div className="flex items-center gap-4 text-[15px]">
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--orange)]"></span>
+            <p>System: payroll for last month was processed successfully.</p>
+          </div>
+          {myLeaves.length === 0 && <p className="text-sm text-[var(--ink-soft)]">No leave activity yet.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard({ db, setView, onSelectEmployee }) {
+  const pendingLeaves = db.leaves.filter(l => l.status === 'Pending');
+  const presentToday = db.attendance.filter(a => a.date === todayStr && a.checkIn).length;
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="label-eyebrow">HR overview</p>
+        <h2 className="font-display text-4xl font-semibold text-[var(--ink)] mt-2 tracking-tight">Good to see you</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="card p-6">
+          <p className="label-eyebrow">Total employees</p>
+          <p className="font-display text-4xl font-semibold mt-3">{db.users.filter(u => u.role === 'Employee').length}</p>
+        </div>
+        <StatBlock eyebrow="Present today" value={presentToday} caption="Checked in so far" className="cursor-pointer transform hover:-translate-y-1 transition-transform" />
+        <div className="card p-6 cursor-pointer md:col-span-1" onClick={() => setView('leaves')}>
+          <p className="label-eyebrow">Pending leave</p>
+          <p className="font-display text-4xl font-semibold mt-3 text-[var(--yellow)]">{pendingLeaves.length}</p>
+          <p className="text-sm text-[var(--ink-soft)] mt-2">Needs a decision</p>
+        </div>
+        <div className="card p-6 cursor-pointer flex flex-col justify-center" onClick={() => setView('attendance')}>
+          <p className="label-eyebrow mb-3">Attendance log</p>
